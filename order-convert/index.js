@@ -153,7 +153,6 @@ module.exports = async function (context, req) {
     
     // Format response.
     context.res = {
-            // status: 200, /* Defaults to 200 */
             status : 200,
             headers : {
                 "Content-Type" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
