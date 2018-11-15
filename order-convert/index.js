@@ -2,40 +2,66 @@ const XLSX = require('xlsx');
 
 module.exports = async function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
-        if (req.body.contents) {
-            var workbook = XLSX.read((req.body.contents), {type : "base64", cellDates : true});
-            console.log('error:', error); // Print the error if one occurred
-            console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            var workbook = XLSX.read(body, {type : "buffer", cellDates : true});
-            var wname = workbook.SheetNames[0];
-			var worksheet = workbook.Sheets[wname];
-          
-            var formatMoney = function(amount, decimalCount = 2, decimal = ".", thousands = ",") {
-                try {
-                decimalCount = Math.abs(decimalCount);
-                decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
-
-                const negativeSign = amount < 0 ? "-" : "";
-
-                let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
-                let j = (i.length > 3) ? i.length % 3 : 0;
-
-                return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
-                } 
-                catch (e) {
-                    console.log(e)
+    if (req.body.contents) {
+        // Load file from body. Base64 encoded.
+        try {
+        var workbook = XLSX.read((req.body.contents), {type : "base64", cellDates : true});
+        var wname = workbook.SheetNames[0];
+        var worksheet = workbook.Sheets[wname];
+        }
+        catch (e) {
+            context.log(e);
+            context.res = {
+                // status: 400, /* Error */
+                status : 400,
+                body: {
+                    status : "error",
+                    message : "Unable to load file.",
+                    diagnostic : e.name + ' - ' + e.message
                 }
             };
-          
-            // Start from Excel row 2.
+            return;
+        }
+
+        var formatMoney = function(amount, decimalCount = 2, decimal = ",", thousands = "") {
+            try {
+            decimalCount = Math.abs(decimalCount);
+            decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+
+            const negativeSign = amount < 0 ? "-" : "";
+
+            let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+            let j = (i.length > 3) ? i.length % 3 : 0;
+
+            return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+            } 
+            catch (e) {
+                context.log(e);
+                return;
+            }
+        };
+        
+        try {
+            // Prepare header.
             var targetRows = [];
-          	var row = 2;
+            var rowValues = {
+                A : "Cod.",
+                B : "Descrizione",
+                C : "Q.tà",
+                D : "Prezzo netto",
+                E : "U.m.",
+                F : "Sconti",
+                G : "Iva"
+            };
+            targetRows.push(rowValues);
+            // Start from Excel row 1.
+            var row = 1;
             // Test column A until empty.
             var cell = worksheet["A" + row];
             var value = cell ? cell.v : "";
             var testValue = value;
             while (testValue != "") {
-                var rowValues = {};
+                rowValues = {};
                 // Product code.
                 var cell = worksheet["AY" + row];
                 var value = cell ? cell.v : "";
@@ -82,30 +108,61 @@ module.exports = async function (context, req) {
                 var value = cell ? cell.v : "";
                 var testValue = value;
             }
-
-            // Create Excel in EasyFatt order format.
-            var wsEasyFatt = XLSX.utils.json_to_sheet(
-                targetRows/*,
-                {
-                    header : ["Cod.", "Descrizione", "Q.tà", "Prezzo netto", 
-                        "U.m.", "Sconti", "IVA"
-                    ],
-                    skipHeader : true
-                }*/
-            )
-
+        }
+        catch (e) {
+            context.log(e);
             context.res = {
-                // status: 200, /* Defaults to 200 */
-                status : 201,
+                // status: 400, /* Error */
+                status : 400,
                 body: {
-                    wsEasyFatt
-                },
-                headers : {
-                    "Content-Type" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "Content-Disposition" : 'attachment;filename="Ordine EasyFatt.xlsx"'
+                    status : "error",
+                    message : "Unable to convert file data.",
+                    diagnostic : e.name + ' - ' + e.message
                 }
             };
+            return;
         }
+
+        // Create Excel workbook and append sheet 
+        // in EasyFatt order format.
+        var wsEasyFatt;
+        var wbOutput = XLSX.utils.book_new();
+
+        try {
+            wsEasyFatt = XLSX.utils.json_to_sheet(
+                targetRows,
+                {skipHeader : true}
+            )
+            XLSX.utils.book_append_sheet(wbOutput, wsEasyFatt, "Righe documento");
+            /* generate buffer */
+	        var buf = XLSX.write(wbOutput, {type:'buffer', bookType: "xlsx"});
+        }
+        catch (e) {
+            context.log(e);
+            context.res = {
+                // status: 400, /* Error */
+                status : 400,
+                body: {
+                    status : "error",
+                    message : "Unable to convert file data.",
+                    diagnostic : e.name + ' - ' + e.message
+                }
+            };
+            return;
+        }
+    
+    // Format response.
+    context.res = {
+            // status: 200, /* Defaults to 200 */
+            status : 200,
+            headers : {
+                "Content-Type" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Content-Disposition" : 'attachment;filename="Ordine EasyFatt.xlsx"'
+            },
+            body: new Uint8Array(buf)/*,
+            isRaw : true*/
+        };
+    }
     else {
         context.res = {
             status: 400,
