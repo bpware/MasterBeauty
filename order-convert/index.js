@@ -151,7 +151,7 @@ module.exports = async function (context, req) {
             return;
         }
     
-    // Format response.
+    // Format response. Return XLSX file.
     context.res = {
             status : 200,
             headers : {
