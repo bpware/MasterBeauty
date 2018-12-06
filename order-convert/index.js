@@ -5,7 +5,7 @@ module.exports = async function (context, req) {
         debugger;
         context.log('JavaScript HTTP trigger function processed a request.');
         if (req.body.contents) {
-            // Load file from body. Base64 encoded.
+            
             try {
                 var workbook = XLSX.read((req.body.contents), { type: "base64", cellDates: true });
                 var wname = workbook.SheetNames[0];
@@ -28,13 +28,13 @@ module.exports = async function (context, req) {
             // Check mode parameter to convert file or describe it.
             if (req.body.mode && req.body.mode == 'describe') {
                 var cell = worksheet["AQ1"];
-                var afn = cell ? cell.v : "";
+                var agentFirstName = cell ? cell.v : "";
 
                 cell = worksheet["AR1"];
-                var aln = cell ? cell.v : "";
+                var agentLastName = cell ? cell.v : "";
 
                 cell = worksheet["L1"];
-                var cn = cell ? cell.v : "";
+                var customerName = cell ? cell.v : "";
 
                 context.res = {
                     status: 200,
@@ -42,13 +42,14 @@ module.exports = async function (context, req) {
                         "Content-Type": "application/json"
                     },
                     body: {
-                        "agent-first-name": afn,
-                        "agent-last-name": aln,
-                        "customer-name": cn,
+                        "agent-first-name": agentFirstName,
+                        "agent-last-name": agentLastName,
+                        "customer-name": customerName
                     }
                 };
 
             } else {
+                
                 var formatMoney = function (amount, decimalCount = 2, decimal = ",", thousands = "") {
                     try {
                         decimalCount = Math.abs(decimalCount);
@@ -153,13 +154,18 @@ module.exports = async function (context, req) {
                 // in EasyFatt order format.
                 var wsEasyFatt;
                 var wbOutput = XLSX.utils.book_new();
+                var newFileName;
 
                 try {
+                    //Generate a new file name with .xlsx extension
+                    newFileName = req.body.filename.replace('.csv','.xlsx');
+
                     wsEasyFatt = XLSX.utils.json_to_sheet(
                         targetRows,
                         { skipHeader: true }
                     )
                     XLSX.utils.book_append_sheet(wbOutput, wsEasyFatt, "Righe documento");
+
                     /* generate buffer */
                     var buf = XLSX.write(wbOutput, { type: 'buffer', bookType: "xlsx" });
                 }
@@ -182,7 +188,7 @@ module.exports = async function (context, req) {
                     status: 200,
                     headers: {
                         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        "Content-Disposition": 'attachment;filename="Ordine EasyFatt.xlsx"'
+                        "Content-Disposition": 'attachment;filename="'+newFileName+'"'
                     },
                     body: new Uint8Array(buf)/*,
             isRaw : true*/
