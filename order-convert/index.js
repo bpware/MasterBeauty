@@ -104,8 +104,7 @@ module.exports = async function (context, req) {
                         // Unit price.
                         var cell = worksheet["BB" + row];
                         var value = cell ? cell.v : "0";
-                        //var value = cell ? ("€ "+Number(cell.v.toFixed(1)).toLocaleString()) : "";
-                        rowValues["D"] = ("€ " + formatMoney(cell.v));
+                        rowValues["D"] = ("€ " + formatMoney(value));
                         // Units name.
                         var cell = worksheet["BF" + row];
                         var value = cell ? cell.v : "";
