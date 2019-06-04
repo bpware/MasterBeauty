@@ -102,7 +102,7 @@ module.exports = (context, req) => {
                                                                                     + item["Date"] + "|"
                                                                                     + item["Number"] + "|"
                                                                                     + item["Numbering"] + "|"
-                                                                                    + childIndex;
+                                                                                    + childIndex + 1;
                                                         for (const childKey in childItem) {
                                                             if (childItem.hasOwnProperty(childKey)) {
                                                                 row['PaymentRow.' + childKey] = childItem[childKey][0];
@@ -133,7 +133,7 @@ module.exports = (context, req) => {
                                                                                     + item["Date"] + "|"
                                                                                     + item["Number"] + "|"
                                                                                     + item["Numbering"] + "|"
-                                                                                    + childIndex;
+                                                                                    + childIndex + 1;
                                                         //This is the process of rows under each 
                                                         for (const childKey in childItem) {
                                                             if (childItem.hasOwnProperty(childKey)) {
@@ -186,7 +186,7 @@ module.exports = (context, req) => {
                                             break;
                                         default:
                                             //This is for invoice data
-                                            newEl['Invoice.' + key] = item[key][0];
+                                            newEl['Document.' + key] = item[key][0];
                                             break;
                                     }
                                 }
@@ -351,7 +351,7 @@ module.exports = (context, req) => {
     //                                     }
     //                                     break;
     //                                 default:
-    //                                     newEl['Invoice.' + key] = item[key][0];
+    //                                     newEl['Document.' + key] = item[key][0];
     //                                     break;
     //                             }
     //                         }
