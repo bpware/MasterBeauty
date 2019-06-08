@@ -9,7 +9,7 @@ const createCsvStringifier = require('csv-writer').createObjectCsvStringifier;
 module.exports = (context, req) => {
     context.log('JavaScript HTTP trigger function processed a request.');
 
-    //const {sourceUrl, expand, outFilename} = req.query || req.body;
+    //const {sourceUrl, expand, outFilename} = req.query || req.body;   d
     sourceUrl = req.body.sourceUrl;
     expand = req.body.expand;
     outFilename = req.body.outFilename;
@@ -57,12 +57,18 @@ module.exports = (context, req) => {
 
                     //set Company data
                     let company = {};
+                   
+                    
+                    setColumnHeaders(company);
+
                     for (const key in temp) {
                         if (temp.hasOwnProperty(key)) {
                             company['Company.' + key] = temp[key][0];
                         }
                     }
-
+                    //set report Date and report Time
+                    company["ReportDate"] = reportDate;
+                    company["ReportTime"] = reportTime;
                     temp = res.EasyfattDocuments.Documents[0].Document;
                     let documents = [];
                     let orderID = '', orderDate = '', shipID = '', shipDate = '';
@@ -72,9 +78,7 @@ module.exports = (context, req) => {
                         for (let index = 0; index < temp.length; index++) {
                             const item = temp[index];
                             let newEl ={};
-                            //set report Date and report Time
-                            newEl["ReportDate"] = reportDate;
-                            newEl["ReportTime"] = reportTime;
+                            
                             
                             Object.assign(newEl,company);
                             
@@ -197,16 +201,20 @@ module.exports = (context, req) => {
                     {
                         console.log("Error: " + e);
                     }
-                    const csvHeader = Object.keys(documents[0]).map((value) => {
-                        return {
-                            'id': value,
-                            'title': value,
-                        };
-                    });
-
+                   
+                    const csvHeader = Object.keys(company).map((value) => {
+                            return {
+                                'id': value,
+                                'title': value,
+                            };
+                        });
+                        
+                    
                     const csvStringifier = createCsvStringifier({
                         header: csvHeader,
                     });
+                    
+                    
 
                     let bufStr = csvStringifier.getHeaderString();
                     bufStr += csvStringifier.stringifyRecords(documents);
@@ -231,6 +239,7 @@ module.exports = (context, req) => {
             });
         }
     });
+
 
     // fs.readFile("24.05.19 ddt completi.DefXml", (err, data) => {
     //     if (err) {
@@ -410,3 +419,113 @@ module.exports = (context, req) => {
     //     }
     // });
 };
+
+function setColumnHeaders(headers) {
+    headers["ReportDate"] = '';
+    headers["ReportTime"] = '';
+    headers['Company.Name'] = '';
+    headers['Company.Address'] = '';
+    headers['Company.Postcode'] = '';
+    headers['Company.City'] = '';
+    headers['Company.Province'] = '';
+    headers['Company.Country'] = '';
+    headers['Company.FiscalCode'] = '';
+    headers['Company.VatCode'] = '';
+    headers['Company.Tel'] = '';
+    headers['Company.Email'] = '';
+    headers['Company.HomePage'] = '';
+    headers['Document.Date'] = '';
+    headers['Document.Number'] = '';
+    headers['Document.Numbering'] = '';
+    headers['Document.CustomerName'] = '';
+    headers['Document.CustomerCode'] = '';
+    headers['Document.CustomerWebLogin'] = '';
+    headers['Document.CustomerAddress'] = '';
+    headers['Document.CustomerPostcode'] = '';
+    headers['Document.CustomerCity'] = '';
+    headers['Document.CustomerProvince'] = '';
+    headers['Document.CustomerCountry'] = '';
+    headers['Document.CustomerFiscalCode'] = '';
+    headers['Document.CustomerVatCode'] = '';
+    headers['Document.CustomerReference'] = '';
+    headers['Document.CustomerTel'] = '';
+    headers['Document.CustomerCellPhone'] = '';
+    headers['Document.CustomerFax'] = '';
+    headers['Document.CustomerEmail'] = '';
+    headers['Document.CustomerPec'] = '';
+    headers['Document.CustomerEInvoiceDestCode'] = '';
+    headers['Document.DocumentType'] = '';
+    headers['Document.DeliveryName'] = '';
+    headers['Document.DeliveryAddress'] = '';
+    headers['Document.DeliveryPostcode'] = '';
+    headers['Document.DeliveryCity'] = '';
+    headers['Document.DeliveryProvince'] = '';
+    headers['Document.DeliveryCountry'] = '';
+    headers['Document.Warehouse'] = '';
+    headers['Document.CostDescription'] = '';
+    headers['Document.CostVatCode'] = '';
+    headers['Document.CostAmount'] = '';
+    headers['Document.TotalWithoutTax'] = '';
+    headers['Document.VatAmount'] = '';
+    headers['Document.TotalSubjectToWithholdingTax'] = '';
+    headers['Document.WithholdingTaxAmount'] = '';
+    headers['Document.WithholdingTaxAmountB'] = '';
+    headers['Document.Total'] = '';
+    headers['Document.PriceList'] = '';
+    headers['Document.PricesIncludeVat'] = '';
+    headers['Document.WithholdingTaxPerc'] = '';
+    headers['Document.WithholdingTaxPerc2'] = '';
+    headers['Document.WithholdingTaxNameB'] = '';
+    headers['Document.ContribDescription'] = '';
+    headers['Document.ContribPerc'] = '';
+    headers['Document.ContribSubjectToWithholdingTax'] = '';
+    headers['Document.ContribAmount'] = '';
+    headers['Document.ContribVatCode'] = '';
+    headers['Document.PaymentName'] = '';
+    headers['Document.PaymentBank'] = '';
+    headers['Document.CustomField1'] = '';
+    headers['Document.CustomField2'] = '';
+    headers['Document.CustomField3'] = '';
+    headers['Document.CustomField4'] = '';
+    headers['Document.FootNotes'] = '';
+    headers['Document.SalesAgent'] = '';
+    headers['Document.DelayedVat'] = '';
+    headers['Document.DelayedVatDesc'] = '';
+    headers['Document.DelayedVatDueWithinOneYear'] = '';
+    headers['Document.PaymentAdvanceAmount'] = '';
+    headers['Document.Carrier'] = '';
+    headers['Document.TransportReason'] = '';
+    headers['Document.GoodsAppearance'] = '';
+    headers['Document.TransportDateTime'] = '';
+    headers['Document.ShipmentTerms'] = '';
+    headers['Document.TransportedWeight'] = '';
+    headers['Document.TrackingNumber'] = '';
+    headers['Document.InternalComment'] = '';
+    headers['Document.NumOfPieces'] = '';
+    headers['Document.ExpectedConclusionDate'] = '';
+    headers['Document.DocReference'] = '';
+    headers['Document.Pdf'] = '';
+    headers['DocumentRow.RowNumber'] = '';
+    headers['DocumentRow.RowID'] = '';
+    headers['DocumentRow.Code'] = '';
+    headers['DocumentRow.Description'] = '';
+    headers['DocumentRow.Qty'] = '';
+    headers['DocumentRow.Um'] = '';
+    headers['DocumentRow.Price'] = '';
+    headers['DocumentRow.Discounts'] = '';
+    headers['DocumentRow.VatCode'] = '';
+    headers['DocumentRow.Total'] = '';
+    headers['DocumentRow.Stock'] = '';
+    headers['DocumentRow.Notes'] = '';
+    headers['DocumentRow.OrderID'] = '';
+    headers['DocumentRow.ShipmentID'] = '';
+    headers['DocumentRow.ShipmentDate'] = '';
+    headers['DocumentRow.OrderDate'] = '';
+   
+    headers['PaymentRow.RowNumber'] = '';
+    headers['PaymentRow.RowID'] = '';
+    headers['PaymentRow.Advance'] = '';
+    headers['PaymentRow.Date'] = '';
+    headers['PaymentRow.Amount'] = '';
+    headers['PaymentRow.Paid'] = '';
+}
