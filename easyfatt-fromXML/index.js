@@ -101,12 +101,14 @@ module.exports = (context, req) => {
                                                         const childItem = childItems[childIndex];
                                                         //set Paymenet details
                                                         row['PaymentRow.RowNumber'] = childIndex + 1;
+
+                                                        var paddedRowId = pad(childIndex +1,4);
                                                         row['PaymentRow.RowID'] = "P" + "|"
                                                                                     + item["DocumentType"] + "|"
                                                                                     + item["Date"] + "|"
                                                                                     + item["Number"] + "|"
                                                                                     + item["Numbering"] + "|"
-                                                                                    + (childIndex + 1);
+                                                                                    + paddedRowId;
                                                         for (const childKey in childItem) {
                                                             if (childItem.hasOwnProperty(childKey)) {
                                                                 row['PaymentRow.' + childKey] = childItem[childKey][0];
@@ -132,12 +134,13 @@ module.exports = (context, req) => {
                                                         const childItem = childItems[childIndex];
                                                         //set Document Details
                                                         row['DocumentRow.RowNumber'] = childIndex + 1;
+                                                        var paddedRowId = pad(childIndex +1,4);
                                                         row['DocumentRow.RowID'] = "R" + "|"
                                                                                     + item["DocumentType"] + "|"
                                                                                     + item["Date"] + "|"
                                                                                     + item["Number"] + "|"
                                                                                     + item["Numbering"] + "|"
-                                                                                    + (childIndex + 1);
+                                                                                    + paddedRowId;
                                                         //This is the process of rows under each 
                                                         for (const childKey in childItem) {
                                                             if (childItem.hasOwnProperty(childKey)) {
@@ -419,6 +422,13 @@ module.exports = (context, req) => {
     //     }
     // });
 };
+
+//This function function will return padded character passed as 'z'. Default value of 'z' is '0'
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+  }
 
 function setColumnHeaders(headers) {
     headers["ReportDate"] = '';
